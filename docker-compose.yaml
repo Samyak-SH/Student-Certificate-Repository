@@ -9,13 +9,46 @@ services:
     networks:
       - student-repo-network
     
-  backend:
+  backend1:
     build : ./server
     image: student-repo-server
     ports:
-      - "8080:8080"
+      - "5001:5001"
     environment:
-      - PORT=8080
+      - PORT=5001
+      - SECRET_KEY=mykey123
+      - MONGODBURL=mongodb://root:root@mongodb:27017/?authSource=admin
+    networks:
+      - student-repo-network
+  backend2:
+    build : ./server
+    image: student-repo-server
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - SECRET_KEY=mykey123
+      - MONGODBURL=mongodb://root:root@mongodb:27017/?authSource=admin
+    networks:
+      - student-repo-network
+  backend3:
+    build : ./server
+    image: student-repo-server
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - SECRET_KEY=mykey123
+      - MONGODBURL=mongodb://root:root@mongodb:27017/?authSource=admin
+    networks:
+      - student-repo-network
+  backend4:
+    build : ./server
+    image: student-repo-server
+    ports:
+      - "5004:5004"
+    environment:
+      - PORT=5004
       - SECRET_KEY=mykey123
       - MONGODBURL=mongodb://root:root@mongodb:27017/?authSource=admin
     networks:
