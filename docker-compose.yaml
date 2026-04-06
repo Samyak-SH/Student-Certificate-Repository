@@ -9,6 +9,11 @@ services:
       - "5000:5000"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+      - backend4
     networks:
       - student-repo-network
 
@@ -19,8 +24,6 @@ services:
       - "5173:5173"
     environment:
       - VITE_SERVER_URL=http://localhost:5000
-    depends_on:
-      - nginx
     networks:
       - student-repo-network
     
@@ -35,7 +38,6 @@ services:
       - SECRET_KEY=mykey123
       - MONGODBURL=mongodb://root:root@mongodb:27017/?authSource=admin
     depends_on:
-      - nginx
       - mongodb
     networks:
       - student-repo-network
@@ -51,7 +53,6 @@ services:
       - SECRET_KEY=mykey123
       - MONGODBURL=mongodb://root:root@mongodb:27017/?authSource=admin
     depends_on:
-      - nginx
       - mongodb
     networks:
       - student-repo-network
@@ -67,7 +68,6 @@ services:
       - SECRET_KEY=mykey123
       - MONGODBURL=mongodb://root:root@mongodb:27017/?authSource=admin
     depends_on:
-      - nginx
       - mongodb
     networks:
       - student-repo-network
@@ -83,7 +83,6 @@ services:
       - SECRET_KEY=mykey123
       - MONGODBURL=mongodb://root:root@mongodb:27017/?authSource=admin
     depends_on:
-      - nginx
       - mongodb
     networks:
       - student-repo-network
@@ -98,8 +97,6 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=root
     volumes:
       - mongo-data:/data/db
-    depends_on:
-      - nginx
     networks:
       - student-repo-network
 
