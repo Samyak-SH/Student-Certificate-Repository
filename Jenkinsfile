@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        COMPOSE_PROJECT_NAME = "student-repo"
+    }
+
     stages {
 
         stage('Clone') {
