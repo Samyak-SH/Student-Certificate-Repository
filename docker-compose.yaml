@@ -4,8 +4,8 @@ services:
     image: student-repo-client
     ports:
       - "5173:5173"
-    env_file:
-      - ./client/.env
+    environment:
+      - VITE_SERVER_URL=http://localhost:5000
     networks:
       - student-repo-network
     
