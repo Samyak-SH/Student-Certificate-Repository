@@ -40,6 +40,8 @@ app.post("/verify", verifyTokenLogin);
 app.post("/teacherLogin", getTeacher)
 app.post("/studentLogin", getStudent)
 
+app.get("/testupdate",(req,res)=>{res.send("updated code")})
+
 
 app.post("/createTeacher", createTeacher)
 
