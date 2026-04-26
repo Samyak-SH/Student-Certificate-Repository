@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         DOCKERHUB_USERNAME = "samyak2005"
-        BACKEND_IMAGE = "samyak2005/scr-server:latest"
-        FRONTEND_IMAGE = "samyak2005/scr-client:latest"
+        BACKEND_IMAGE      = "samyak2005/scr-server:latest"
+        FRONTEND_IMAGE     = "samyak2005/scr-client:latest"
     }
 
     stages {
@@ -23,49 +23,31 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                    bat '@docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
                 }
             }
         }
 
         stage('Build & Push Docker Images') {
             steps {
-                script {
-                    bat "docker build -t %BACKEND_IMAGE% .\\server"
-                    bat "docker build -t %FRONTEND_IMAGE% .\\client"
+                bat """
+                @docker build -t %BACKEND_IMAGE% .\\server
+                @docker build -t %FRONTEND_IMAGE% .\\client
 
-                    // Jenkins machine should already be docker login authenticated
-                    bat "docker push %BACKEND_IMAGE%"
-                    bat "docker push %FRONTEND_IMAGE%"
-                }
+                @docker push %BACKEND_IMAGE%
+                @docker push %FRONTEND_IMAGE%
+                """
             }
         }
-
-        // stage('Create Kubernetes Secret') {
-        //     steps {
-        //         withCredentials([
-        //             string(credentialsId: 'mongo-url', variable: 'MONGO_URL'),
-        //             string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET')
-        //         ]) {
-        //             bat '''
-        //             kubectl delete secret backend-secret --ignore-not-found
-
-        //             kubectl create secret generic backend-secret ^
-        //             --from-literal=MONGODBURL=%MONGO_URL% ^
-        //             --from-literal=SECRET_KEY=%JWT_SECRET%
-        //             '''
-        //         }
-        //     }
-        // }
 
         stage('Deploy Backend to Kubernetes') {
             steps {
                 bat """
-                    kubectl apply -f k8s\\backend-service.yaml
-                    kubectl apply -f k8s\\backend-deployment.yaml
+                @kubectl apply -f k8s\\backend-service.yaml
+                @kubectl apply -f k8s\\backend-deployment.yaml
 
-                    kubectl rollout restart deployment/backend
-                    kubectl rollout status deployment/backend
+                @kubectl rollout restart deployment/backend
+                @kubectl rollout status deployment/backend
                 """
             }
         }
@@ -75,12 +57,12 @@ pipeline {
                 script {
 
                     def miniIP = bat(
-                        script: 'minikube ip',
+                        script: '@minikube ip',
                         returnStdout: true
                     ).trim()
 
                     def nodePort = bat(
-                        script: 'kubectl get svc backend -o jsonpath="{.spec.ports[0].nodePort}"',
+                        script: '@kubectl get svc backend -o jsonpath="{.spec.ports[0].nodePort}"',
                         returnStdout: true
                     ).trim()
 
@@ -94,20 +76,20 @@ pipeline {
         stage('Deploy Frontend Docker Container') {
             steps {
                 bat """
-                    docker rm -f scr-frontend || exit /b 0
+                @docker rm -f scr-frontend >nul 2>&1
 
-                    docker run -d ^
-                    --name scr-frontend ^
-                    -p 5173:5173 ^
-                    -e VITE_SERVER_URL=%BACKEND_URL% ^
-                    %FRONTEND_IMAGE%
+                @docker run -d ^
+                 --name scr-frontend ^
+                 -p 5173:5173 ^
+                 -e VITE_SERVER_URL=%BACKEND_URL% ^
+                 %FRONTEND_IMAGE%
                 """
             }
         }
 
         stage('Cleanup') {
             steps {
-                bat 'docker image prune -f'
+                bat '@docker image prune -f'
             }
         }
     }
