@@ -41,22 +41,22 @@ pipeline {
             }
         }
 
-        stage('Create Kubernetes Secret') {
-            steps {
-                withCredentials([
-                    string(credentialsId: 'mongo-url', variable: 'MONGO_URL'),
-                    string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET')
-                ]) {
-                    bat '''
-                    kubectl delete secret backend-secret --ignore-not-found
+        // stage('Create Kubernetes Secret') {
+        //     steps {
+        //         withCredentials([
+        //             string(credentialsId: 'mongo-url', variable: 'MONGO_URL'),
+        //             string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET')
+        //         ]) {
+        //             bat '''
+        //             kubectl delete secret backend-secret --ignore-not-found
 
-                    kubectl create secret generic backend-secret ^
-                    --from-literal=MONGODBURL=%MONGO_URL% ^
-                    --from-literal=SECRET_KEY=%JWT_SECRET%
-                    '''
-                }
-            }
-        }
+        //             kubectl create secret generic backend-secret ^
+        //             --from-literal=MONGODBURL=%MONGO_URL% ^
+        //             --from-literal=SECRET_KEY=%JWT_SECRET%
+        //             '''
+        //         }
+        //     }
+        // }
 
         stage('Deploy Backend to Kubernetes') {
             steps {
