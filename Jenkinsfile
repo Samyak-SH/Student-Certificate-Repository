@@ -73,19 +73,19 @@ pipeline {
         stage('Get Backend URL') {
             steps {
                 script {
+
                     def miniIP = bat(
                         script: 'minikube ip',
                         returnStdout: true
                     ).trim()
 
                     def nodePort = bat(
-                        script: '''
-                        for /f "tokens=*" %%i in ('kubectl get svc backend -o jsonpath="{.spec.ports[0].nodePort}"') do @echo %%i
-                        ''',
+                        script: 'kubectl get svc backend -o jsonpath="{.spec.ports[0].nodePort}"',
                         returnStdout: true
                     ).trim()
 
                     env.BACKEND_URL = "http://${miniIP}:${nodePort}"
+
                     echo "Backend URL = ${env.BACKEND_URL}"
                 }
             }
