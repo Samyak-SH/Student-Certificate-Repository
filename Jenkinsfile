@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USERNAME = "samyak2005"
-        BACKEND_IMAGE      = "samyak2005/scr-server:latest"
-        FRONTEND_IMAGE     = "samyak2005/scr-client:latest"
+        BACKEND_IMAGE  = "samyak2005/scr-server:latest"
+        FRONTEND_IMAGE = "samyak2005/scr-client:latest"
     }
 
     stages {
@@ -28,7 +27,7 @@ pipeline {
             }
         }
 
-        stage('Build & Push Docker Images') {
+        stage('Build & Push Images') {
             steps {
                 bat """
                 @docker build -t %BACKEND_IMAGE% .\\server
@@ -40,56 +39,33 @@ pipeline {
             }
         }
 
-        stage('Deploy Backend to Kubernetes') {
+        stage('Enable Ingress') {
+            steps {
+                bat '@minikube addons enable ingress'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
             steps {
                 bat """
-                @kubectl apply -f k8s\\backend-service.yaml
                 @kubectl apply -f k8s\\backend-deployment.yaml
+                @kubectl apply -f k8s\\backend-service.yaml
+                @kubectl apply -f k8s\\frontend-deployment.yaml
+                @kubectl apply -f k8s\\frontend-service.yaml
+                @kubectl apply -f k8s\\ingress.yaml
 
                 @kubectl rollout restart deployment/backend
+                @kubectl rollout restart deployment/frontend
+
                 @kubectl rollout status deployment/backend
+                @kubectl rollout status deployment/frontend
                 """
             }
         }
 
-        stage('Get Backend URL') {
+        stage('Done') {
             steps {
-                script {
-
-                    def miniIP = bat(
-                        script: '@minikube ip',
-                        returnStdout: true
-                    ).trim()
-
-                    def nodePort = bat(
-                        script: '@kubectl get svc backend -o jsonpath="{.spec.ports[0].nodePort}"',
-                        returnStdout: true
-                    ).trim()
-
-                    env.BACKEND_URL = "http://${miniIP}:${nodePort}"
-
-                    echo "Backend URL = ${env.BACKEND_URL}"
-                }
-            }
-        }
-
-        stage('Deploy Frontend Docker Container') {
-            steps {
-                bat """
-                @docker rm -f scr-frontend >nul 2>&1
-
-                @docker run -d ^
-                 --name scr-frontend ^
-                 -p 5173:5173 ^
-                 -e VITE_SERVER_URL=%BACKEND_URL% ^
-                 %FRONTEND_IMAGE%
-                """
-            }
-        }
-
-        stage('Cleanup') {
-            steps {
-                bat '@docker image prune -f'
+                echo 'Open http://studentrepo.local'
             }
         }
     }
