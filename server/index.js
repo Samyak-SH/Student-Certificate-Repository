@@ -34,7 +34,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use("/student", studentRouter);
 app.use("/teacher", teacherRouter);
 
-app.get("/test", (req, res) => { res.send("server running") });
+app.get("/test", (req, res) => { res.send("server running 2") });
 app.post("/verify", verifyTokenLogin);
 
 //todo
