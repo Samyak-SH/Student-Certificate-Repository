@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        BACKEND_IMAGE  = "samyak2005/scr-server:latest"
-        FRONTEND_IMAGE = "samyak2005/scr-client:latest"
+        BACKEND_IMAGE = "samyak2005/scr-server:latest"
     }
 
     stages {
@@ -27,52 +26,38 @@ pipeline {
             }
         }
 
-        stage('Build & Push Images') {
+        stage('Build & Push Backend Image') {
             steps {
                 bat """
                 @docker build -t %BACKEND_IMAGE% .\\server
-                @docker build -t %FRONTEND_IMAGE% .\\client
-
                 @docker push %BACKEND_IMAGE%
-                @docker push %FRONTEND_IMAGE%
                 """
             }
         }
 
-        stage('Enable Ingress') {
-            steps {
-                bat '@minikube addons enable ingress'
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
+        stage('Deploy Backend to Kubernetes') {
             steps {
                 bat """
-                @kubectl apply -f k8s\\backend-deployment.yaml
                 @kubectl apply -f k8s\\backend-service.yaml
-                @kubectl apply -f k8s\\frontend-deployment.yaml
-                @kubectl apply -f k8s\\frontend-service.yaml
-                @kubectl apply -f k8s\\ingress.yaml
+                @kubectl apply -f k8s\\backend-deployment.yaml
 
                 @kubectl rollout restart deployment/backend
-                @kubectl rollout restart deployment/frontend
-
                 @kubectl rollout status deployment/backend
-                @kubectl rollout status deployment/frontend
                 """
             }
         }
 
-        stage('Done') {
-            steps {
-                echo 'Open http://studentrepo.local'
-            }
-        }
+        // stage('Show Backend URL') {
+        //     steps {
+        //         echo 'Backend available at: http://localhost:30080 (try this first)'
+        //         echo 'If needed use: minikube ip + :30080'
+        //     }
+        // }
     }
 
     post {
         success {
-            echo 'Deployment successful'
+            echo 'Backend deployment successful'
         }
 
         failure {
