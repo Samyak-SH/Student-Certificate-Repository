@@ -35,7 +35,7 @@ services:
     environment:
       - PORT=5000
       - SECRET_KEY=mykey123
-      - MONGODBURL=mongodb+srv://Samyak:samyak2005@test.tv0wrvf.mongodb.net/SCR?appName=TEST
+      - MONGODBURL=mongodb://root:root@mongodb:27017/?authSource=admin
     depends_on:
       - mongodb
     networks:
