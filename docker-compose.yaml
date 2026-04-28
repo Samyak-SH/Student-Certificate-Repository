@@ -22,7 +22,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_SERVER_URL=http://localhost:63671
+      - VITE_SERVER_URL=http://localhost:60340
     networks:
       - student-repo-network
     
