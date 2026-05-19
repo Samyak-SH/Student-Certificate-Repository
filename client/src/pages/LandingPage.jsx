@@ -29,7 +29,7 @@ const LandingPage = () => {
               className="mb-6 "
             >
               <span className="px-4 py-2 bg-primary-500 bg-opacity-90 text-white rounded-full text-sm font-medium">
-               Student  Certificate Repository
+               Student  Certificate Repositoryyyyyy
               </span>
             </motion.div>
             

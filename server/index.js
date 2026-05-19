@@ -34,14 +34,12 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use("/student", studentRouter);
 app.use("/teacher", teacherRouter);
 
-app.get("/test", (req, res) => { res.send("server running 2") });
+app.get("/test", (req, res) => { res.send("server running 1") });
 app.post("/verify", verifyTokenLogin);
 
 //todo
 app.post("/teacherLogin", getTeacher)
 app.post("/studentLogin", getStudent)
-
-app.get("/testupdate", (req, res) => { res.send("updated code 2") })
 
 
 app.post("/createTeacher", createTeacher)
