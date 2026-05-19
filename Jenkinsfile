@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         BACKEND_IMAGE = "samyak2005/scr-server:latest"
+        FRONTEND_IMAGE = "samyak2005/scr_client:latest"
     }
 
     stages {
@@ -26,11 +27,13 @@ pipeline {
             }
         }
 
-        stage('Build & Push Backend Image') {
+        stage('Build & Push Image') {
             steps {
                 bat """
                 @docker build -t %BACKEND_IMAGE% .\\server
+                @docker build -t %FRONTEND_IMAGE% .\\client
                 @docker push %BACKEND_IMAGE%
+                @docker push %FRONTEND_IMAGE%
                 """
             }
         }
@@ -47,12 +50,15 @@ pipeline {
             }
         }
 
-        // stage('Show Backend URL') {
-        //     steps {
-        //         echo 'Backend available at: http://localhost:30080 (try this first)'
-        //         echo 'If needed use: minikube ip + :30080'
-        //     }
-        // }
+        stage('Deploy Frontend using Docker compose'){
+            steps {
+                bat """
+                docker compose down
+                docker compose pull
+                docker compose up -d
+                """
+            }
+        }
     }
 
     post {
@@ -62,6 +68,10 @@ pipeline {
 
         failure {
             echo 'Deployment failed'
+        }
+
+        always {
+            bat 'docker system prune -f'
         }
     }
 }
