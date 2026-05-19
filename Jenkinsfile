@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    triggers {
+        githubPush()
+    }
+
     environment {
         BACKEND_IMAGE = "samyak2005/scr-server:latest"
         FRONTEND_IMAGE = "samyak2005/scr_client:latest"
