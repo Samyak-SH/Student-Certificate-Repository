@@ -53,9 +53,11 @@ pipeline {
         stage('Deploy Frontend using Docker compose'){
             steps {
                 bat """
-                docker compose down
-                docker compose pull
-                docker compose up -d
+                docker compose stop frontend
+                docker compose rm -f frontend
+
+                docker compose pull frontend
+                docker compose up -d frontend
                 """
             }
         }
