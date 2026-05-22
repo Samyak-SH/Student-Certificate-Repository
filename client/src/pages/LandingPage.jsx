@@ -61,7 +61,7 @@ const LandingPage = () => {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-800 mb-4">
-              Streamlined Certificate Repository
+              Streamlined Certificate Repositoryyy
             </h2>
             <p className="text-xl text-neutral-600 max-w-3xl mx-auto">
               Our platform provides a comprehensive solution for managing student certificates and achievements.
