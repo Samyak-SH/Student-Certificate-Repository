@@ -2,7 +2,7 @@
 services:
   frontend:
     build: ./client 
-    image: samyak2005/scr_client:latest
+    image: samyak2005/scr-client:latest
     ports:
       - "5173:5173"
     environment:
