@@ -32,11 +32,11 @@ const createTeacher = (req,res)=>{
     }
     //todo create JWT and return to user
     teacherModel.createTeacher(teacher, (result)=>{
-        if(result.err){
+        if(result.error){
             console.error(result.message, result.error.message);
             return res.status(500).send({message : result.message, error:result.error.message});
         }
-        res.status(200).send({message : result.message});
+        res.status(200).header("x-auth-token", result.token).send({message : result.message});
     })
 }
 

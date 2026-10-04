@@ -3,6 +3,8 @@ require("dotenv").config({ path: "./.env" });
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
 //controller imports
 const { createStudent, getStudent } = require("./controller/studentController")
@@ -16,19 +18,29 @@ const { teacherRouter } = require("./router/teacherRouter")
 const { verifyTokenLogin } = require("./middleware/verifyToken");
 
 //env imports
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 8000;
 const MONGODBURL = process.env.MONGODBURL;
 
 //other consts expressions
 const app = express();
 
 //middleware
+app.use(helmet());
 app.use(cors({
     origin: "*",
     exposedHeaders: ['x-auth-token'],
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Rate limiting — max 20 requests per 15 minutes on auth routes
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: { message: "Too many requests, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 //routings
 app.use("/student", studentRouter);
@@ -38,11 +50,15 @@ app.get("/test", (req, res) => { res.send("server healthy") });
 app.post("/verify", verifyTokenLogin);
 
 //todo
-app.post("/teacherLogin", getTeacher)
-app.post("/studentLogin", getStudent)
+app.post("/teacherLogin", authLimiter, getTeacher)
+app.post("/studentLogin", authLimiter, getStudent)
+app.post("/createTeacher", authLimiter, createTeacher)
 
-
-app.post("/createTeacher", createTeacher)
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error("Unhandled error:", err);
+    res.status(500).send({ message: "Internal server error", error: err.message });
+});
 
 const startServer = async () => {
     try {

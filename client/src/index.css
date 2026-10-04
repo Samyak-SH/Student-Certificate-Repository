@@ -39,34 +39,59 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
 
   .btn-primary {
-    @apply btn bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500;
+    @apply btn bg-brand-600 text-white hover:bg-brand-700 shadow-brand focus:ring-brand-500 active:scale-95;
+  }
+
+  .btn-pill {
+    @apply inline-flex items-center justify-center px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-200 bg-brand-600 text-white hover:bg-brand-700 hover:shadow-brand focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 active:scale-95 cursor-pointer;
   }
 
   .btn-secondary {
-    @apply btn bg-secondary-500 text-white hover:bg-secondary-600 focus:ring-secondary-500;
+    @apply btn bg-neutral-100 text-neutral-700 hover:bg-neutral-200 focus:ring-neutral-400 active:scale-95;
   }
 
   .btn-outline {
-    @apply btn border border-primary-500 text-primary-500 hover:bg-primary-50 focus:ring-primary-500;
+    @apply btn border border-brand-200 text-brand-600 hover:bg-brand-50 focus:ring-brand-500 active:scale-95;
   }
 
   .btn-ghost {
-    @apply btn bg-transparent text-neutral-700 hover:bg-neutral-100 focus:ring-neutral-500;
+    @apply btn bg-transparent text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 focus:ring-neutral-400;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-4 py-2.5 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all text-neutral-800 text-sm;
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-card p-6 transition-all duration-200 hover:shadow-hover;
+    @apply bg-white rounded-2xl shadow-card p-6 transition-all duration-300 hover:shadow-hover;
   }
 
   .section-container {
-    @apply container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12;
+    @apply container mx-auto px-4 sm:px-6 lg:px-8 py-6;
   }
+
+  /* Folder Tab Visual Card */
+  .folder-card {
+    @apply relative rounded-2xl transition-all duration-300 p-5 cursor-pointer;
+  }
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d5dae7;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9aa2b6;
 }

@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { FiUser, FiMail, FiLock, FiBookmark, FiX } from 'react-icons/fi'
+import { FiUser, FiMail, FiLock, FiBookmark, FiX, FiCheckCircle } from 'react-icons/fi'
 import { departments } from '../../utils/mockData'       
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+import toast from 'react-hot-toast'
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
 const StudentCredentialForm = ({ onClose, onSuccess }) => {
   const navigate = useNavigate()
@@ -33,231 +35,224 @@ const StudentCredentialForm = ({ onClose, onSuccess }) => {
     if (!formData.firstName || !formData.lastName || !formData.usn || 
         !formData.email || !formData.password || !formData.department || !formData.semester) {
       setError('All fields are required')
+      toast.error('Please fill in all fields')
       return
     }
 
     if (!formData.email.includes('@')) {
       setError('Please enter a valid email address')
+      toast.error('Invalid email address')
       return
     }
 
     setLoading(true)
 
     try {
-      const token = localStorage.getItem("jwt_token_teacher");
+      const token = localStorage.getItem("jwt_token_teacher")
 
-      const response = await axios.post(`${SERVER_URL}/teacher/createStudent`, formData, {
+      await axios.post(`${SERVER_URL}/teacher/createStudent`, formData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
-      });
+      })
 
-      onSuccess(); 
+      toast.success(`Account created for ${formData.firstName}!`)
+      onSuccess()
     } catch (err) {
-      console.error(err);
-      if (err.response.status === 500) {
-        alert("credentials already exists");
-      }
-      if (err.response.status === 400 || err.response.status === 401) {
-        navigate('/teacher/login');
+      console.error(err)
+      if (err.response?.status === 500 || err.response?.data?.message?.includes('already exists')) {
+        setError('A student with this USN or Email already exists')
+        toast.error('Student USN or email already exists')
+      } else if (err.response?.status === 400 || err.response?.status === 401) {
+        toast.error('Session expired. Please log in again.')
+        navigate('/teacher/login')
+      } else {
+        setError('Failed to create student account')
+        toast.error('Failed to create account')
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  const modalVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
-      transition: { type: 'spring', damping: 25, stiffness: 500 }
-    },
-    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } }
-  }
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/40 backdrop-blur-xs">
       <motion.div 
-        className="bg-white rounded-lg shadow-lg max-w-md w-full p-6"
-        variants={modalVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
+        className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-neutral-100"
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-neutral-800">Create Student Account</h2>
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-neutral-100 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-neutral-900">Create Student Account</h3>
+            <p className="text-xs text-neutral-500 mt-0.5">Provision repository access for an enrolled student</p>
+          </div>
           <button 
             onClick={onClose}
-            className="text-neutral-500 hover:text-neutral-700 focus:outline-none"
+            className="p-2 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-xl transition-colors"
           >
             <FiX className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
+          <div className="mx-6 mt-4 p-3 bg-red-50 text-red-700 rounded-xl text-xs font-medium border border-red-100">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-neutral-700 mb-1">
+              <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
                 First Name
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiUser className="text-neutral-500" />
-                </div>
+                <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
                 <input
                   type="text"
-                  id="firstName"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
                   className="input-field pl-10"
-                  placeholder="First name"
+                  placeholder="e.g. John"
+                  required
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-neutral-700 mb-1">
+              <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
                 Last Name
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiUser className="text-neutral-500" />
-                </div>
+                <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
                 <input
                   type="text"
-                  id="lastName"
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
                   className="input-field pl-10"
-                  placeholder="Last name"
+                  placeholder="e.g. Doe"
+                  required
                 />
               </div>
             </div>
           </div>
 
-          <div className="mb-4">
-            <label htmlFor="usn" className="block text-sm font-medium text-neutral-700 mb-1">
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
               USN (University Seat Number)
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiBookmark className="text-neutral-500" />
-              </div>
+              <FiBookmark className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
               <input
                 type="text"
-                id="usn"
                 name="usn"
                 value={formData.usn}
                 onChange={handleChange}
                 className="input-field pl-10"
-                placeholder="e.g., 1MS18CS001"
+                placeholder="e.g. 1MS21CS042"
+                required
               />
             </div>
           </div>
 
-          {/* Department Field */}
-          <div className="mb-4">
-            <label htmlFor="department" className="block text-sm font-medium text-neutral-700 mb-1">
-              Department
-            </label>
-            <select
-              id="department"
-              name="department"
-              value={formData.department}
-              onChange={handleChange}
-              className="input-field"
-            >
-              <option value="">Select Department</option>
-              {departments.map(dept => (
-                <option key={dept} value={dept}>{dept}</option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                Department
+              </label>
+              <select
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
+                className="input-field"
+                required
+              >
+                <option value="">Select Department</option>
+                {departments.map(dept => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                Semester
+              </label>
+              <select
+                name="semester"
+                value={formData.semester}
+                onChange={handleChange}
+                className="input-field"
+                required
+              >
+                <option value="">Select Semester</option>
+                {[...Array(8)].map((_, index) => (
+                  <option key={index + 1} value={index + 1}>
+                    Semester {index + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          
-          <div className="mb-4">
-            <label htmlFor="semester" className="block text-sm font-medium text-neutral-700 mb-1">
-              Semester
-            </label>
-            <select
-              id="semester"
-              name="semester"
-              value={formData.semester}
-              onChange={handleChange}
-              className="input-field"
-            >
-              <option value="">Select Semester</option>
-              {[...Array(8)].map((_, index) => (
-                <option key={index + 1} value={index + 1}>
-                  Semester {index + 1}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
-              Email
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+              Student Email
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiMail className="text-neutral-500" />
-              </div>
+              <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
               <input
                 type="email"
-                id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 className="input-field pl-10"
-                placeholder="student@example.com"
+                placeholder="student@college.edu"
+                required
               />
             </div>
           </div>
 
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
-              Password
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+              Temporary Password
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiLock className="text-neutral-500" />
-              </div>
+              <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
               <input
                 type="password"
-                id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 className="input-field pl-10"
-                placeholder="Create a password"
+                placeholder="Create password"
+                required
               />
             </div>
           </div>
 
-          <div className="flex justify-end space-x-3">
+          <div className="pt-2 flex items-center justify-end space-x-3">
             <button
               type="button"
               onClick={onClose}
-              className="btn-outline"
+              className="btn-secondary text-xs px-5 py-2.5"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="btn-primary"
+              className="btn-pill text-xs px-6 py-2.5 flex items-center justify-center min-w-[130px]"
               disabled={loading}
             >
+              {loading ? (
+                <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              ) : null}
               {loading ? 'Creating...' : 'Create Account'}
             </button>
           </div>
@@ -268,3 +263,4 @@ const StudentCredentialForm = ({ onClose, onSuccess }) => {
 }
 
 export default StudentCredentialForm
+

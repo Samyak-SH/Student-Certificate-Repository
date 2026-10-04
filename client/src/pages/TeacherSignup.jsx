@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiMail, FiLock, FiBookmark } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { FiUser, FiMail, FiLock, FiBookmark, FiArrowRight } from 'react-icons/fi'
+import { motion } from 'framer-motion'
 import axios from 'axios'
+import toast from 'react-hot-toast'
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
 const TeacherSignup = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -15,204 +16,209 @@ const TeacherSignup = () => {
     email: '',
     password: '',
     TID: '',
-  });
+  })
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault()
+    setError('')
 
-    const { firstName, lastName, email, password, TID } = formData;
+    const { firstName, lastName, email, password, TID } = formData
 
     if (!firstName || !lastName || !email || !password || !TID) {
-      setError('All fields are required');
-      return;
+      setError('All fields are required')
+      toast.error('Please fill in all fields')
+      return
     }
 
     if (!email.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
+      setError('Please enter a valid email address')
+      toast.error('Invalid email address')
+      return
     }
 
-    setLoading(true);
-    const response = await axios.post(`${SERVER_URL}/createTeacher`, formData);
+    setLoading(true)
+    try {
+      const response = await axios.post(`${SERVER_URL}/createTeacher`, formData, {
+        timeout: 10000,
+      })
 
-    if(response.data.message == "Success"){
-      setLoading(false);
-      navigate('/teacher/login');
+      if (response.data.message === 'Success') {
+        toast.success('Faculty account created! Please sign in.')
+        navigate('/teacher/login')
+      } else {
+        setError(response.data.message || 'Error creating account')
+        toast.error('Registration failed')
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || 'Could not connect to server. Is it running?'
+      )
+      toast.error('Registration failed')
+    } finally {
+      setLoading(false)
     }
-    else{
-      setLoading(false);
-      alert("Error creating account\n" + response.data.message)
-    }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary-50 to-primary-100">
-      <div className="container mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        ></motion.div>
-      </div>
-
-      <div className="flex-grow flex items-center justify-center px-6 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md"
-        >
-          <div className="text-center mb-8">
-            <div className="inline-block p-3 rounded-full bg-primary-100 text-primary-600 mb-4">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                />
-              </svg>
-            </div>
-            <h2 className="text-3xl font-bold text-neutral-800">Create an Account</h2>
-            <p className="text-neutral-600 mt-2">Sign up as a teacher to get started</p>
+    <div className="min-h-screen bg-[#f3f4fa] flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white rounded-3xl shadow-card border border-neutral-100 max-w-lg w-full p-8 sm:p-10"
+      >
+        {/* Brand Header */}
+        <div className="text-center mb-8">
+          <div
+            onClick={() => navigate('/')}
+            className="inline-flex items-center cursor-pointer mb-3"
+          >
+            <span className="text-3xl font-black tracking-tight text-neutral-900">
+              certify
+            </span>
+            <span className="text-3xl font-black text-brand-600">.</span>
           </div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>
-          )}
+          <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">
+            Create Faculty Account
+          </h2>
+          <p className="text-xs text-neutral-500 mt-1">
+            Join your institution's certificate management network
+          </p>
+        </div>
 
+        {error && (
+          <div className="mb-5 p-3.5 bg-red-50 text-red-700 rounded-2xl text-xs font-medium border border-red-100">
+            {error}
+          </div>
+        )}
 
-{/* started signup form with credential */}
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-neutral-700 mb-1">
-                  First Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiUser className="text-neutral-500" />
-                  </div>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className="input-field pl-10"
-                    placeholder="First name"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-neutral-700 mb-1">
-                  Last Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiUser className="text-neutral-500" />
-                  </div>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    className="input-field pl-10"
-                    placeholder="Last name"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="TID" className="block text-sm font-medium text-neutral-700 mb-1">
-                Teacher ID
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                First Name
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiBookmark className="text-neutral-500" />
-                </div>
+                <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
                 <input
                   type="text"
-                  id="TID"
-                  name="TID"
-                  value={formData.TID}
+                  name="firstName"
+                  value={formData.firstName}
                   onChange={handleChange}
                   className="input-field pl-10"
-                  placeholder="Teacher ID"
+                  placeholder="First name"
+                  required
                 />
               </div>
             </div>
 
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
-                Email
+            <div>
+              <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                Last Name
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiMail className="text-neutral-500" />
-                </div>
+                <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
                 <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
                   onChange={handleChange}
                   className="input-field pl-10"
-                  placeholder="Your email"
+                  placeholder="Last name"
+                  required
                 />
               </div>
             </div>
+          </div>
 
-            <div className="mb-6">
-              <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className="text-neutral-500" />
-                </div>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="input-field pl-10"
-                  placeholder="Create a password"
-                />
-              </div>
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+              Teacher ID (TID)
+            </label>
+            <div className="relative">
+              <FiBookmark className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
+              <input
+                type="text"
+                name="TID"
+                value={formData.TID}
+                onChange={handleChange}
+                className="input-field pl-10"
+                placeholder="e.g. FAC2026-08"
+                required
+              />
             </div>
+          </div>
 
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3">
-              {loading ? 'Creating Account...' : 'Sign Up'}
-            </button>
-          </form>
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+              Institutional Email
+            </label>
+            <div className="relative">
+              <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="input-field pl-10"
+                placeholder="faculty@college.edu"
+                required
+              />
+            </div>
+          </div>
 
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="input-field pl-10"
+                placeholder="Minimum 6 characters"
+                required
+              />
+            </div>
+          </div>
 
-          {/* if login it render to login form */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-pill w-full py-3 text-sm font-semibold tracking-wide shadow-brand flex items-center justify-center mt-2"
+          >
+            {loading ? (
+              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+            ) : null}
+            {loading ? 'Creating Account...' : 'Register as Faculty'}
+            {!loading && <FiArrowRight className="ml-2 w-4 h-4" />}
+          </button>
+        </form>
 
-          <p className="mt-6 text-center text-neutral-600">
-            Already have an account?{' '}
-            <Link to="/teacher/login" className="text-primary-600 hover:text-primary-700 font-medium">
-              Login here
-            </Link>
-          </p>
-        </motion.div>
-      </div>
+        <div className="mt-8 pt-6 border-t border-neutral-100 text-center text-xs text-neutral-500">
+          Already have an account?{' '}
+          <Link
+            to="/teacher/login"
+            className="text-brand-600 font-bold hover:underline"
+          >
+            Sign In
+          </Link>
+        </div>
+      </motion.div>
     </div>
-  );
-};
+  )
+}
 
-export default TeacherSignup;
+export default TeacherSignup

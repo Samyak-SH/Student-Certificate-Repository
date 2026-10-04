@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiMail, FiLock } from 'react-icons/fi'
+import { FiMail, FiLock, FiArrowRight, FiShield, FiUser } from 'react-icons/fi'
 import { motion } from 'framer-motion'
 import axios from 'axios'
-import { useEffect } from 'react'
+import toast from 'react-hot-toast'
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
 const TeacherLogin = () => {
   const navigate = useNavigate()
@@ -13,31 +13,29 @@ const TeacherLogin = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
- const verifyToken = async (token)=>{
-    try{
-      const response = await axios.post(`${SERVER_URL}/verify`, {token : token});
-      if(response.status == 200){
-      navigate('/teacher/home');
+  const verifyToken = async (token) => {
+    try {
+      const response = await axios.post(`${SERVER_URL}/verify`, { token })
+      if (response.status === 200) {
+        navigate('/teacher/home')
       }
-
-    }
-    catch(err){
-      if(err.response.status == 401){
-      alert("session expired please login again");
+    } catch (err) {
+      if (err.response?.status === 401) {
+        toast.error('Session expired. Please log in again.')
       }
     }
   }
+
   useEffect(() => {
-    const token = localStorage.getItem('jwt_token_teacher');
-    console.log(token);
+    const token = localStorage.getItem('jwt_token_teacher')
     if (token) {
-      verifyToken(token);
+      verifyToken(token)
     }
   }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e) => {
@@ -45,26 +43,31 @@ const TeacherLogin = () => {
     setError('')
 
     if (!formData.email || !formData.password) {
-      setError('All fields are required')
+      setError('Please fill in both email and password.')
+      toast.error('Please enter all credentials')
       return
     }
 
     setLoading(true)
 
     try {
-      const response = await axios.post(`${SERVER_URL}/teacherLogin`, formData);
-      if (response.status == 200) {
-        const token = response.headers['x-auth-token'];
-        localStorage.setItem('jwt_token_teacher', token);
-        navigate('/teacher/home');
+      const response = await axios.post(`${SERVER_URL}/teacherLogin`, formData)
+      if (response.status === 200) {
+        const token = response.headers['x-auth-token']
+        localStorage.setItem('jwt_token_teacher', token)
+        toast.success('Welcome back, Professor!')
+        navigate('/teacher/home')
       }
     } catch (err) {
       if (err.response?.status === 401) {
-        setError("Wrong credentials");
+        setError('Invalid password. Please check your credentials.')
+        toast.error('Invalid credentials')
       } else if (err.response?.status === 404) {
-        setError("User doesn't exist");
+        setError('No faculty account registered with this email.')
+        toast.error('Account not found')
       } else {
-        setError("Login failed. Please try again.");
+        setError('Login service unavailable. Please check backend connection.')
+        toast.error('Login failed')
       }
     } finally {
       setLoading(false)
@@ -72,101 +75,114 @@ const TeacherLogin = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary-50 to-primary-100">
-      <div className="container mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-
-        </motion.div>
-      </div>
-
-      <div className="flex-grow flex items-center justify-center px-6 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md"
-        >
-          <div className="text-center mb-8">
-            <div className="inline-block p-3 rounded-full bg-primary-100 text-primary-600 mb-4">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h2 className="text-3xl font-bold text-neutral-800">Welcome Back</h2>
-            <p className="text-neutral-600 mt-2">Log in to your teacher account</p>
+    <div className="min-h-screen bg-[#f3f4fa] flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white rounded-3xl shadow-card border border-neutral-100 max-w-md w-full p-8 sm:p-10"
+      >
+        {/* Brand Header */}
+        <div className="text-center mb-8">
+          <div
+            onClick={() => navigate('/')}
+            className="inline-flex items-center cursor-pointer mb-4"
+          >
+            <span className="text-3xl font-black tracking-tight text-neutral-900">
+              certify
+            </span>
+            <span className="text-3xl font-black text-brand-600">.</span>
           </div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-md text-sm">
-              {error}
-            </div>
-          )}
+          {/* Role Pill Switcher */}
+          <div className="inline-flex p-1 bg-neutral-100 rounded-full text-xs font-semibold mb-6">
+            <span className="px-4 py-1.5 bg-brand-600 text-white rounded-full shadow-xs">
+              Faculty Portal
+            </span>
+            <button
+              onClick={() => navigate('/student/login')}
+              className="px-4 py-1.5 text-neutral-500 hover:text-neutral-900 rounded-full transition-colors"
+            >
+              Student Portal
+            </button>
+          </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
-                Email
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiMail className="text-neutral-500" />
-                </div>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="input-field pl-10"
-                  placeholder="Your email"
-                />
-              </div>
-            </div>
+          <h2 className="text-2xl font-bold text-neutral-900 tracking-tight">
+            Welcome Back
+          </h2>
+          <p className="text-xs text-neutral-500 mt-1">
+            Access the institutional certificate repository
+          </p>
+        </div>
 
-            <div className="mb-6">
-              <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
+        {error && (
+          <div className="mb-5 p-3.5 bg-red-50 text-red-700 rounded-2xl text-xs font-medium border border-red-100">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">
+              Faculty Email
+            </label>
+            <div className="relative">
+              <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="input-field pl-10"
+                placeholder="faculty@college.edu"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-bold text-neutral-700 uppercase tracking-wider">
                 Password
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className="text-neutral-500" />
-                </div>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="input-field pl-10"
-                  placeholder="Your password"
-                />
-              </div>
             </div>
+            <div className="relative">
+              <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" />
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="input-field pl-10"
+                placeholder="••••••••••••"
+                required
+              />
+            </div>
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full py-3"
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-pill w-full py-3 text-sm font-semibold tracking-wide shadow-brand flex items-center justify-center mt-2"
+          >
+            {loading ? (
+              <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+            ) : null}
+            {loading ? 'Authenticating...' : 'Sign In as Faculty'}
+            {!loading && <FiArrowRight className="ml-2 w-4 h-4" />}
+          </button>
+        </form>
 
-          <p className="mt-6 text-center text-neutral-600">
-            Don't have an account?{' '}
-            <Link
-              to="/teacher/signup"
-              className="text-primary-600 hover:text-primary-700 font-medium"
-            >
-              Sign up here
-            </Link>
-          </p>
-        </motion.div>
-      </div>
+        <div className="mt-8 pt-6 border-t border-neutral-100 text-center text-xs text-neutral-500">
+          New department faculty?{' '}
+          <Link
+            to="/teacher/signup"
+            className="text-brand-600 font-bold hover:underline"
+          >
+            Create Faculty Account
+          </Link>
+        </div>
+      </motion.div>
     </div>
   )
 }

@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
+const SALT_ROUNDS = 10;
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -22,12 +25,26 @@ const getStudent = async (incoming_email, incoming_pass, cb) => {
     if (result) {
       const { USN, TID, firstName, lastName, email, password, department, semester } = result;
 
-      if (password !== incoming_pass) {
+      let isMatch = false;
+      try {
+        isMatch = await bcrypt.compare(incoming_pass, password);
+      } catch (e) {
+        isMatch = false;
+      }
+
+      // Fallback for legacy plain text passwords in MongoDB
+      if (!isMatch && incoming_pass === password) {
+        isMatch = true;
+        const hashedPassword = await bcrypt.hash(incoming_pass, SALT_ROUNDS);
+        await studentModel.updateOne({ email: incoming_email }, { $set: { password: hashedPassword } });
+      }
+
+      if (!isMatch) {
         return cb(null, { message: "wrong password" });
       }
 
-      const payload = { USN, TID, firstName, lastName, email, department, semester };
-      const token = jwt.sign(payload, SECRET_KEY);
+      const payload = { USN, TID: TID || "1", firstName, lastName, email, department: department || "General", semester: semester || "1" };
+      const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '7d' });
 
       return cb(null, { message: "success", token });
     } else {
@@ -42,9 +59,8 @@ const getStudent = async (incoming_email, incoming_pass, cb) => {
 const createStudent = async (student, cb) => {
   try {
     console.log("student : ", student);
-
-    await studentModel.create(student);
-
+    const hashedPassword = await bcrypt.hash(student.password, SALT_ROUNDS);
+    await studentModel.create({ ...student, password: hashedPassword });
     cb({ message: "Success", error: null });
   } catch (err) {
     cb({ message: "Failed to create student", error: err });

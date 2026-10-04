@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
+import { Toaster } from 'react-hot-toast'
 
 // Pages
 import LandingPage from './pages/LandingPage'
@@ -27,7 +28,8 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-neutral-100">
+      <Toaster position="top-right" toastOptions={{ duration: 3500, style: { borderRadius: '12px', background: '#1f2937', color: '#fff' } }} />
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           <Routes>
